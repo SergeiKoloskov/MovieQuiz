@@ -70,6 +70,9 @@
                                                     <color key="titleColor" name="YP Black"/>
                                                     <color key="titleShadowColor" name="YP White"/>
                                                 </state>
+                                                <connections>
+                                                    <action selector="noButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="H3h-0R-U5l"/>
+                                                </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ayv-vq-lQN">
                                                 <rect key="frame" x="186.66666666666663" y="0.0" width="166.33333333333337" height="60"/>
@@ -80,6 +83,9 @@
                                                     <color key="titleColor" name="YP Black"/>
                                                     <color key="titleShadowColor" name="YP White"/>
                                                 </state>
+                                                <connections>
+                                                    <action selector="yesButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XwG-F6-4Hu"/>
+                                                </connections>
                                             </button>
                                         </subviews>
                                         <constraints>
@@ -99,7 +105,10 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="counterLabel" destination="HPQ-Rd-Mzc" id="lAI-yb-4iE"/>
+                        <outlet property="imageView" destination="cIc-yk-bq5" id="Fq3-YX-NPW"/>
                         <outlet property="noButton" destination="DBB-Cx-L9d" id="pwZ-gV-SPq"/>
+                        <outlet property="textLabel" destination="4xJ-uc-Iuf" id="H8e-aS-aON"/>
                         <outlet property="yesButton" destination="ayv-vq-lQN" id="V3o-gY-W0o"/>
                     </connections>
                 </viewController>
