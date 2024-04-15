@@ -74,8 +74,7 @@ final class MovieQuizViewController: UIViewController {
     @IBAction private func yesButtonClicked(_ sender: Any) {
         let currentQuestion = questions[currentQuestionIndex] // 1
         let givenAnswer = true // 2
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
+        changeStateButton(isEnabled: false)
         
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
@@ -83,8 +82,7 @@ final class MovieQuizViewController: UIViewController {
     @IBAction private func noButtonClicked(_ sender: Any) {
         let currentQuestion = questions[currentQuestionIndex] // 1
         let givenAnswer = false // 2
-        noButton.isEnabled = false
-        yesButton.isEnabled = false
+        changeStateButton(isEnabled: false)
         
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
@@ -105,8 +103,7 @@ final class MovieQuizViewController: UIViewController {
             // код, который мы хотим вызвать через 1 секунду
             self.showNextQuestionOrResults()
             self.imageView.layer.borderWidth = 0
-            self.yesButton.isEnabled = true
-            self.noButton.isEnabled = true
+            self.changeStateButton(isEnabled: true)
         }
     }
     
@@ -167,6 +164,11 @@ final class MovieQuizViewController: UIViewController {
             
             show(quiz: viewModel)
         }
+    }
+    
+    private func changeStateButton(isEnabled: Bool) {
+        noButton.isEnabled = isEnabled
+        yesButton.isEnabled = isEnabled
     }
     
 }
