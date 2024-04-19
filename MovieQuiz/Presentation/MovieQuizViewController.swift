@@ -74,7 +74,6 @@ final class MovieQuizViewController: UIViewController {
     @IBAction private func yesButtonClicked(_ sender: Any) {
         let currentQuestion = questions[currentQuestionIndex] // 1
         let givenAnswer = true // 2
-        changeStateButton(isEnabled: false)
         
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
@@ -82,12 +81,12 @@ final class MovieQuizViewController: UIViewController {
     @IBAction private func noButtonClicked(_ sender: Any) {
         let currentQuestion = questions[currentQuestionIndex] // 1
         let givenAnswer = false // 2
-        changeStateButton(isEnabled: false)
         
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     private func showAnswerResult(isCorrect: Bool) {
+        changeStateButton(isEnabled: false)
         if isCorrect { // 1
             correctAnswers += 1 // 2
         }
@@ -99,7 +98,9 @@ final class MovieQuizViewController: UIViewController {
         imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
         
         // запускаем задачу через 1 секунду c помощью диспетчера задач
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            
             // код, который мы хотим вызвать через 1 секунду
             self.showNextQuestionOrResults()
             self.imageView.layer.borderWidth = 0
@@ -133,7 +134,9 @@ final class MovieQuizViewController: UIViewController {
             message: result.text,
             preferredStyle: .alert)
         
-        let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
+        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
@@ -172,6 +175,11 @@ final class MovieQuizViewController: UIViewController {
     }
     
 }
+
+
+
+
+
 
 // для состояния "Результат квиза"
 private struct QuizResultsViewModel {
