@@ -17,6 +17,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
+    private var statisticService: StatisticService?
     
     
     // MARK: - Lifecycle
@@ -32,6 +33,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         questionFactory.requestNextQuestion()
         
         alertPresenter = AlertPresenter(delegate: self)
+        
+        statisticService = StatisticServiceImplementation()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -100,16 +103,24 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
+            statisticService?.store(correct: correctAnswers, total: questionsAmount)
+            let statisticsText = statisticsText()
+            
             let text = correctAnswers == questionsAmount ?
             "Поздравляем, вы ответили на 10 из 10!" :
             "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"// 1
-            let alertModel = AlertModel(title: "Этот раунд окончен!", message: text, buttonText: "Сыграть еще раз") { [weak self] in
-                guard let self = self else { return }
-                self.currentQuestionIndex = 0
-                self.correctAnswers = 0
-                questionFactory?.requestNextQuestion()
-            }
             
+            let finalText = "\(text)\n\(statisticsText)"
+            
+            let alertModel = AlertModel(
+                title: "Этот раунд окончен!",
+                message: finalText,
+                buttonText: "Сыграть еще раз") { [weak self] in
+                    guard let self = self else { return }
+                    self.currentQuestionIndex = 0
+                    self.correctAnswers = 0
+                    questionFactory?.requestNextQuestion()
+                }
             alertPresenter?.show(quiz: alertModel)
         } else {
             currentQuestionIndex += 1
@@ -120,6 +131,26 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func changeStateButton(isEnabled: Bool) {
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
+    }
+    
+    private func statisticsText() -> String {
+        guard let statisticsService = statisticService else {
+            return "Ошибка при загрузке статистики"
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM.yyyy HH:mm"
+        
+        let gamesPlayed = statisticsService.gamesCount
+        let bestGameScore = "\(statisticsService.bestGame.correct)/\(statisticsService.bestGame.total)"
+        let bestGameDate = dateFormatter.string(from: statisticsService.bestGame.date)
+        let accuracy = String(format: "%.2f%%", statisticsService.totalAccuracy * 100)
+        
+        return """
+        Количество сыгранных квизов: \(gamesPlayed)
+        Рекорд: \(bestGameScore) (\(bestGameDate))
+        Средняя точность: \(accuracy)
+        """
     }
     
 }
