@@ -54,7 +54,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let currentQuestion = currentQuestion else {
             return
         }
-        let givenAnswer = true // 2
+        let givenAnswer = true
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
@@ -62,21 +62,21 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let currentQuestion = currentQuestion else {
             return
         }
-        let givenAnswer = false // 2
+        let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     // MARK: - Private functions
     private func showAnswerResult(isCorrect: Bool) {
         changeStateButton(isEnabled: false)
-        if isCorrect { // 1
-            correctAnswers += 1 // 2
+        if isCorrect {
+            correctAnswers += 1
         }
         
-        imageView.layer.masksToBounds = true // даём разрешение на рисование рамки
-        imageView.layer.borderWidth = 8 // толщина рамки
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        imageView.layer.cornerRadius = 20 // радиус скругления углов рамки
+        imageView.layer.cornerRadius = 20
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self = self else { return }
@@ -87,11 +87,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
+    private func changeStateButton(isEnabled: Bool) {
+        noButton.isEnabled = isEnabled
+        yesButton.isEnabled = isEnabled
+    }
+    
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel( // 1
-            image: UIImage(named: model.image) ?? UIImage(), // 2
-            question: model.text, // 3
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)") // 4
+        let questionStep = QuizStepViewModel(
+            image: UIImage(named: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
     }
     
@@ -107,8 +112,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             let statisticsText = statisticsText()
             
             let text = correctAnswers == questionsAmount ?
-            "Поздравляем, вы ответили на 10 из 10!" :
-            "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"// 1
+            "Поздравляем, вы ответили на \(correctAnswers) из \(questionsAmount)!" :
+            "Ваш результат: \(correctAnswers)/\(questionsAmount)"// 1
             
             let finalText = "\(text)\n\(statisticsText)"
             
@@ -128,27 +133,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
-    private func changeStateButton(isEnabled: Bool) {
-        noButton.isEnabled = isEnabled
-        yesButton.isEnabled = isEnabled
-    }
-    
     private func statisticsText() -> String {
-        guard let statisticsService = statisticService else {
-            return "Ошибка при загрузке статистики"
+        guard let statisticService = statisticService else {
+            return "Возникла ошибка при загрузке статистики"
         }
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy HH:mm"
         
-        let gamesPlayed = statisticsService.gamesCount
-        let bestGameScore = "\(statisticsService.bestGame.correct)/\(statisticsService.bestGame.total)"
-        let bestGameDate = dateFormatter.string(from: statisticsService.bestGame.date)
-        let accuracy = String(format: "%.2f%%", statisticsService.totalAccuracy * 100)
+        let gamePlayed = statisticService.gamesCount
+        let bestGameScore = "\(statisticService.bestGame.correct)/\(statisticService.bestGame.total)"
+        let bestGameDate = dateFormatter.string(from: statisticService.bestGame.date)
+        let accuracy = String(format: "%.2f%%", statisticService.totalAccuracy * 100)
         
         return """
-        Количество сыгранных квизов: \(gamesPlayed)
-        Рекорд: \(bestGameScore) (\(bestGameDate))
+        Количество сыгранных квизов: \(gamePlayed)
+        Рекорд: \(bestGameScore) (\(bestGameDate)
         Средняя точность: \(accuracy)
         """
     }

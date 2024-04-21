@@ -51,7 +51,6 @@ final class StatisticServiceImplementation: StatisticService {
             }
             return record
         }
-        
         set {
             guard let data = try? JSONEncoder().encode(newValue) else {
                 print("Невозможно сохранить результат")
@@ -85,6 +84,4 @@ final class StatisticServiceImplementation: StatisticService {
         userDefaults.set(newTotal, forKey: Keys.total.rawValue)
         userDefaults.set(newGamesCount, forKey: Keys.gamesCount.rawValue)
     }
-    
-    
 }
