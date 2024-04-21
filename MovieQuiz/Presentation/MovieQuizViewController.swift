@@ -109,7 +109,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
             statisticService?.store(correct: correctAnswers, total: questionsAmount)
-            let statisticsText = statisticsText()
+            let statisticsText = getStatisticsText()
             
             let text = correctAnswers == questionsAmount ?
             "Поздравляем, вы ответили на \(correctAnswers) из \(questionsAmount)!" :
@@ -133,7 +133,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
-    private func statisticsText() -> String {
+    private func getStatisticsText() -> String {
         guard let statisticService = statisticService else {
             return "Возникла ошибка при загрузке статистики"
         }
@@ -148,7 +148,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         return """
         Количество сыгранных квизов: \(gamePlayed)
-        Рекорд: \(bestGameScore) (\(bestGameDate)
+        Рекорд: \(bestGameScore) (\(bestGameDate))
         Средняя точность: \(accuracy)
         """
     }
