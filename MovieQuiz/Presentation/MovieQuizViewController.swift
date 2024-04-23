@@ -25,15 +25,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        yesButton.layer.cornerRadius = 15.0
-        noButton.layer.cornerRadius = 15.0
-        imageView.layer.cornerRadius = 20
-        
+        uiAdjusments()
         
         let questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
-        questionFactory.delegate = self
         self.questionFactory = questionFactory
-        statisticService = StatisticServiceImplementation()
         
         showLoadingIndicator()
         questionFactory.loadData()
@@ -41,25 +36,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         questionFactory.requestNextQuestion()
         
         alertPresenter = AlertPresenter(delegate: self)
-        
         statisticService = StatisticServiceImplementation()
     }
     
-    // MARK: - QuestionFactoryDelegate
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-            self.hideLoadingIndicator()
-            guard let question = question else {
-                return
-            }
-            self.currentQuestion = question
-            let viewModel = convert(model: question)
-            self.show(quiz: viewModel)
-            self.imageView.layer.borderWidth = 0
-        }
+    func uiAdjusments() {
+        yesButton.layer.cornerRadius = 15.0
+        noButton.layer.cornerRadius = 15.0
+        imageView.layer.cornerRadius = 20
     }
     
     // MARK: - IBActions
@@ -78,6 +61,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let givenAnswer = false
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
+    
+    
+    // MARK: - QuestionFactoryDelegate
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else { return }
+
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: viewModel)
+        }
+        activityIndicator.isHidden = true
+    }
+    
     
     // MARK: - Private functions
     private func showAnswerResult(isCorrect: Bool) {
@@ -118,6 +115,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResults() {
+        imageView.layer.borderWidth = 0
+        
         if currentQuestionIndex == questionsAmount - 1 {
             statisticService?.store(correct: correctAnswers, total: questionsAmount)
             let statisticsText = getStatisticsText()
@@ -174,18 +173,19 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNetworkError(message: String) {
-        hideLoadingIndicator()
-        
-        let model = AlertModel(title: "Ошибка",
-                               message: message,
-                               buttonText: "Попробовать еще раз") { [weak self] in
-            guard let self = self else { return }
-            
-            self.currentQuestionIndex = 0
-            self.correctAnswers = 0
-            self.questionFactory?.requestNextQuestion()
+        DispatchQueue.main.async {
+            self.activityIndicator.isHidden = true
+
+            let viewModel = AlertModel(
+                title: "Ошибка",
+                message: message,
+                buttonText: "Попробовать еще раз") { [weak self] in
+                    guard let self = self else { return }
+                    self.questionFactory?.loadData()
+                    self.questionFactory?.requestNextQuestion()
+                }
+            self.alertPresenter?.show(quiz: viewModel)
         }
-        self.alertPresenter?.show(quiz: model)
     }
     
     func didLoadDataFromServer() {
@@ -196,5 +196,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     func didFailToLoadData(with error: Error) {
         showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
     }
+    
+    func didFailToLoadImage(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
     
 }

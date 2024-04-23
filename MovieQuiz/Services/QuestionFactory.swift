@@ -11,8 +11,7 @@ class QuestionFactory: QuestionFactoryProtocol {
     
     private let moviesLoader: MoviesLoading
     private var movies: [MostPopularMovie] = []
-    
-    weak var delegate: QuestionFactoryDelegate?
+    private weak var delegate: QuestionFactoryDelegate?
     
     init(moviesLoader: MoviesLoading, delegate: QuestionFactoryDelegate?) {
         self.moviesLoader = moviesLoader
@@ -51,6 +50,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                 imageData = try Data(contentsOf: movie.imageURL)
             } catch {
                 print("Failed to load image")
+                self.delegate?.didFailToLoadData(with: error)
             }
             
             let rating = Float(movie.rating) ?? 0
@@ -60,7 +60,8 @@ class QuestionFactory: QuestionFactoryProtocol {
                                          text: text,
                                          correctAnswer: correctAnswer)
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.delegate?.didReceiveNextQuestion(question: question)
             }
         }
