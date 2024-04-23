@@ -47,13 +47,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - QuestionFactoryDelegate
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-        currentQuestion = question
-        let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: viewModel)
+            guard let self = self else {
+                return
+            }
+            self.hideLoadingIndicator()
+            guard let question = question else {
+                return
+            }
+            self.currentQuestion = question
+            let viewModel = convert(model: question)
+            self.show(quiz: viewModel)
+            self.imageView.layer.borderWidth = 0
         }
     }
     
@@ -90,7 +95,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self = self else { return }
 
             self.showNextQuestionOrResults()
-            self.imageView.layer.borderWidth = 0
             self.changeStateButton(isEnabled: true)
         }
     }
@@ -185,7 +189,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     func didLoadDataFromServer() {
-        activityIndicator.isHidden = true // скрываем индикатор загрузки
+        activityIndicator.isHidden = true
         questionFactory?.requestNextQuestion()
     }
 
