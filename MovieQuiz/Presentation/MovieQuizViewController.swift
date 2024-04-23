@@ -10,6 +10,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var imageView: UIImageView!
     
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
     //MARK: - Properties
     private var currentQuestionIndex: Int = 0
     private var correctAnswers: Int = 0
@@ -27,9 +29,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         noButton.layer.cornerRadius = 15.0
         imageView.layer.cornerRadius = 20
         
-        let questionFactory = QuestionFactory()
-        questionFactory.setup(delegate: self)
+        
+        let questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        questionFactory.delegate = self
         self.questionFactory = questionFactory
+        statisticService = StatisticServiceImplementation()
+        
+        showLoadingIndicator()
+        questionFactory.loadData()
+        questionFactory.setup(delegate: self)
         questionFactory.requestNextQuestion()
         
         alertPresenter = AlertPresenter(delegate: self)
@@ -93,11 +101,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-        return questionStep
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -151,6 +158,39 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         Рекорд: \(bestGameScore) (\(bestGameDate))
         Средняя точность: \(accuracy)
         """
+    }
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
+        activityIndicator.startAnimating() // включаем анимацию
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        
+        let model = AlertModel(title: "Ошибка",
+                               message: message,
+                               buttonText: "Попробовать еще раз") { [weak self] in
+            guard let self = self else { return }
+            
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            self.questionFactory?.requestNextQuestion()
+        }
+        self.alertPresenter?.show(quiz: model)
+    }
+    
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true // скрываем индикатор загрузки
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
     }
     
 }
