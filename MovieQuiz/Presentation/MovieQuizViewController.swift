@@ -39,12 +39,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         statisticService = StatisticServiceImplementation()
     }
     
-    func uiAdjusments() {
-        yesButton.layer.cornerRadius = 15.0
-        noButton.layer.cornerRadius = 15.0
-        imageView.layer.cornerRadius = 20
-    }
-    
     // MARK: - IBActions
     @IBAction private func yesButtonClicked(_ sender: Any) {
         guard let currentQuestion = currentQuestion else {
@@ -75,8 +69,21 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         activityIndicator.isHidden = true
     }
     
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
     
-    // MARK: - Private functions
+    func didFailToLoadImage(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
+    
+    // MARK: - Private Methods
     private func showAnswerResult(isCorrect: Bool) {
         changeStateButton(isEnabled: false)
         if isCorrect {
@@ -94,11 +101,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             self.showNextQuestionOrResults()
             self.changeStateButton(isEnabled: true)
         }
-    }
-    
-    private func changeStateButton(isEnabled: Bool) {
-        noButton.isEnabled = isEnabled
-        yesButton.isEnabled = isEnabled
     }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
@@ -143,6 +145,45 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
+    // MARK: - Network Error
+    private func showNetworkError(message: String) {
+        DispatchQueue.main.async {
+            self.activityIndicator.isHidden = true
+
+            let viewModel = AlertModel(
+                title: "Ошибка",
+                message: message,
+                buttonText: "Попробовать еще раз") { [weak self] in
+                    guard let self = self else { return }
+                    self.questionFactory?.loadData()
+                    self.questionFactory?.requestNextQuestion()
+                }
+            self.alertPresenter?.show(quiz: viewModel)
+        }
+    }
+    
+    // MARK: - Helpers Private Methods
+    private func uiAdjusments() {
+        yesButton.layer.cornerRadius = 15.0
+        noButton.layer.cornerRadius = 15.0
+        imageView.layer.cornerRadius = 20
+    }
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
+        activityIndicator.startAnimating() // включаем анимацию
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
+    private func changeStateButton(isEnabled: Bool) {
+        noButton.isEnabled = isEnabled
+        yesButton.isEnabled = isEnabled
+    }
+    
     private func getStatisticsText() -> String {
         guard let statisticService = statisticService else {
             return "Возникла ошибка при загрузке статистики"
@@ -162,44 +203,5 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         Средняя точность: \(accuracy)
         """
     }
-    private func showLoadingIndicator() {
-        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
-        activityIndicator.startAnimating() // включаем анимацию
-    }
-    
-    private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
-        activityIndicator.stopAnimating()
-    }
-    
-    private func showNetworkError(message: String) {
-        DispatchQueue.main.async {
-            self.activityIndicator.isHidden = true
-
-            let viewModel = AlertModel(
-                title: "Ошибка",
-                message: message,
-                buttonText: "Попробовать еще раз") { [weak self] in
-                    guard let self = self else { return }
-                    self.questionFactory?.loadData()
-                    self.questionFactory?.requestNextQuestion()
-                }
-            self.alertPresenter?.show(quiz: viewModel)
-        }
-    }
-    
-    func didLoadDataFromServer() {
-        activityIndicator.isHidden = true
-        questionFactory?.requestNextQuestion()
-    }
-
-    func didFailToLoadData(with error: Error) {
-        showNetworkError(message: error.localizedDescription) // возьмём в качестве сообщения описание ошибки
-    }
-    
-    func didFailToLoadImage(with error: Error) {
-        showNetworkError(message: error.localizedDescription)
-    }
-    
     
 }
