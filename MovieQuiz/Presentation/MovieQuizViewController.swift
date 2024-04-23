@@ -21,10 +21,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var alertPresenter: AlertPresenterProtocol?
     private var statisticService: StatisticService?
     
+    private let dateFormatter = DateFormatter()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        dateFormatter.dateFormat = "dd.MM.yyyy HH:mm"
+        
         uiAdjusments()
         
         let questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
@@ -188,9 +191,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let statisticService = statisticService else {
             return "Возникла ошибка при загрузке статистики"
         }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy HH:mm"
         
         let gamePlayed = statisticService.gamesCount
         let bestGameScore = "\(statisticService.bestGame.correct)/\(statisticService.bestGame.total)"
