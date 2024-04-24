@@ -10,6 +10,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var imageView: UIImageView!
     
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
     //MARK: - Properties
     private var currentQuestionIndex: Int = 0
     private var correctAnswers: Int = 0
@@ -19,34 +21,25 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var alertPresenter: AlertPresenterProtocol?
     private var statisticService: StatisticService?
     
+    private let dateFormatter = DateFormatter()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        yesButton.layer.cornerRadius = 15.0
-        noButton.layer.cornerRadius = 15.0
-        imageView.layer.cornerRadius = 20
+        dateFormatter.dateFormat = "dd.MM.yyyy HH:mm"
         
-        let questionFactory = QuestionFactory()
-        questionFactory.setup(delegate: self)
+        uiAdjusments()
+        
+        let questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         self.questionFactory = questionFactory
+        
+        showLoadingIndicator()
+        questionFactory.loadData()
+        questionFactory.setup(delegate: self)
         questionFactory.requestNextQuestion()
         
         alertPresenter = AlertPresenter(delegate: self)
-        
         statisticService = StatisticServiceImplementation()
-    }
-    
-    // MARK: - QuestionFactoryDelegate
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-        currentQuestion = question
-        let viewModel = convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: viewModel)
-        }
     }
     
     // MARK: - IBActions
@@ -66,7 +59,34 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
-    // MARK: - Private functions
+    
+    // MARK: - QuestionFactoryDelegate
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else { return }
+
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: viewModel)
+        }
+        activityIndicator.isHidden = true
+    }
+    
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
+    func didFailToLoadImage(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
+    
+    // MARK: - Private Methods
     private func showAnswerResult(isCorrect: Bool) {
         changeStateButton(isEnabled: false)
         if isCorrect {
@@ -82,22 +102,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self = self else { return }
 
             self.showNextQuestionOrResults()
-            self.imageView.layer.borderWidth = 0
             self.changeStateButton(isEnabled: true)
         }
     }
     
-    private func changeStateButton(isEnabled: Bool) {
-        noButton.isEnabled = isEnabled
-        yesButton.isEnabled = isEnabled
-    }
-    
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-        return questionStep
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -107,6 +120,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResults() {
+        imageView.layer.borderWidth = 0
+        
         if currentQuestionIndex == questionsAmount - 1 {
             statisticService?.store(correct: correctAnswers, total: questionsAmount)
             let statisticsText = getStatisticsText()
@@ -133,13 +148,49 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
+    // MARK: - Network Error
+    private func showNetworkError(message: String) {
+        DispatchQueue.main.async {
+            self.activityIndicator.isHidden = true
+
+            let viewModel = AlertModel(
+                title: "Ошибка",
+                message: message,
+                buttonText: "Попробовать еще раз") { [weak self] in
+                    guard let self = self else { return }
+                    self.questionFactory?.loadData()
+                    self.questionFactory?.requestNextQuestion()
+                }
+            self.alertPresenter?.show(quiz: viewModel)
+        }
+    }
+    
+    // MARK: - Helpers Private Methods
+    private func uiAdjusments() {
+        yesButton.layer.cornerRadius = 15.0
+        noButton.layer.cornerRadius = 15.0
+        imageView.layer.cornerRadius = 20
+    }
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
+    private func changeStateButton(isEnabled: Bool) {
+        noButton.isEnabled = isEnabled
+        yesButton.isEnabled = isEnabled
+    }
+    
     private func getStatisticsText() -> String {
         guard let statisticService = statisticService else {
             return "Возникла ошибка при загрузке статистики"
         }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy HH:mm"
         
         let gamePlayed = statisticService.gamesCount
         let bestGameScore = "\(statisticService.bestGame.correct)/\(statisticService.bestGame.total)"
