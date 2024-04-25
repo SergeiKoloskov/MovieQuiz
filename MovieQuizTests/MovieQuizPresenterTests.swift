@@ -37,6 +37,7 @@ final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
 }
 
 final class MovieQuizPresenterTests: XCTestCase {
+    
     func testPresenterConvertModel() throws {
         let viewControllerMock = MovieQuizViewControllerMock()
         let sut = MovieQuizPresenter(viewController: viewControllerMock)
