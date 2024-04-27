@@ -15,9 +15,11 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        presenter = MovieQuizPresenter(viewController: self)
+        presenter = MovieQuizPresenter(viewController: self, statisticService: StatisticServiceImplementation())
 
         imageView.layer.cornerRadius = 20
+        yesButton.layer.cornerRadius = 15
+        noButton.layer.cornerRadius = 15
     }
 
     // MARK: - Actions
