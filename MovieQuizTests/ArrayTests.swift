@@ -1,10 +1,3 @@
-//
-//  ArrayTests.swift
-//  MovieQuizTests
-//
-//  Created by MacBookPro on 24.04.2024.
-//
-
 import Foundation
 import XCTest
 @testable import MovieQuiz

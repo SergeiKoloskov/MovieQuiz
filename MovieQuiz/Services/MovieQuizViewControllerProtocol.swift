@@ -1,10 +1,3 @@
-//
-//  MovieQuizViewControllerProtocol.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 25.04.2024.
-//
-
 import Foundation
 
 protocol MovieQuizViewControllerProtocol: AnyObject {

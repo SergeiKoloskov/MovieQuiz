@@ -1,10 +1,3 @@
-//
-//  MovieQuizTests.swift
-//  MovieQuizTests
-//
-//  Created by MacBookPro on 24.04.2024.
-//
-
 import XCTest
 
 struct ArithmeticOperations {

@@ -1,6 +1,11 @@
 import UIKit
 
+// MARK: - MovieQuizViewControlelr Declaration
+
 final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
+    
+    // MARK: - IBOutlets
+    
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
@@ -8,6 +13,8 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     @IBOutlet private var yesButton: UIButton!
     @IBOutlet private var noButton: UIButton!
 
+    // MARK: - Properties
+    
     private var presenter: MovieQuizPresenter?
 
     // MARK: - Lifecycle
@@ -34,7 +41,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         changeStateButton(isEnabled: false)
     }
 
-    // MARK: - Private functions
+    // MARK: - Private Methods
 
     func show(quiz step: QuizStepViewModel) {
         imageView.layer.borderColor = UIColor.clear.cgColor
@@ -62,6 +69,8 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
 
         self.present(alert, animated: true, completion: nil)
     }
+    
+    // MARK: - UI Helpers Methods
 
     func highlightImageBorder(isCorrectAnswer: Bool) {
         imageView.layer.masksToBounds = true
@@ -82,6 +91,8 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
     }
+    
+    // MARK: - Network Handlig
     
     func showNetworkError(message: String) {
         hideLoadingIndicator()

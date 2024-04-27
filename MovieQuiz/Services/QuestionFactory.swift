@@ -1,17 +1,14 @@
-//
-//  QuestionFactory.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 20.04.2024.
-//
-
 import Foundation
+
+// MARK: - QuestionFactory Declaration
 
 class QuestionFactory: QuestionFactoryProtocol {
     
     private let moviesLoader: MoviesLoading
     private var movies: [MostPopularMovie] = []
     private weak var delegate: QuestionFactoryDelegate?
+    
+    // MARK: - Initializer
     
     init(moviesLoader: MoviesLoading, delegate: QuestionFactoryDelegate?) {
         self.moviesLoader = moviesLoader
@@ -21,6 +18,8 @@ class QuestionFactory: QuestionFactoryProtocol {
     func setup(delegate: QuestionFactoryDelegate) {
         self.delegate = delegate
     }
+    
+    // MARK: - Methods
     
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in

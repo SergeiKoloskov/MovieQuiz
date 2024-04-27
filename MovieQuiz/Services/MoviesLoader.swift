@@ -1,22 +1,21 @@
-//
-//  MoviesLoader.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 23.04.2024.
-//
-
 import Foundation
+
+// MARK: - MoviesLoading Protocol Declaration
+
 protocol MoviesLoading {
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void)
 }
 
+// MARK: - MoviesLoader Declaration
+
 struct MoviesLoader: MoviesLoading {
-  // MARK: - NetworkClient
-  private let networkClient: NetworkRouting
-  
-  init(networkClient: NetworkRouting = NetworkClient()) {
-      self.networkClient = networkClient
-  }
+    // MARK: - Properties
+    private let networkClient: NetworkRouting
+    
+    // MARK: - Initializer
+    init(networkClient: NetworkRouting = NetworkClient()) {
+        self.networkClient = networkClient
+    }
     
     // MARK: - URL
     private var mostPopularMoviesUrl: URL {
@@ -26,6 +25,7 @@ struct MoviesLoader: MoviesLoading {
         return url
     }
     
+    // MARK: - Loading Movies Methdos
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void) {
         networkClient.fetch(url: mostPopularMoviesUrl) { result in
             switch result {

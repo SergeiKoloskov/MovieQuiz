@@ -1,14 +1,11 @@
-//
-//  MovieQuizPresenter.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 25.04.2024.
-//
-
 import UIKit
+
+// MARK: - MovieQuizPresenter Declaration
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
 
+    // MARK: - Properties
+    
     private let statisticService: StatisticService
     private var questionFactory: QuestionFactoryProtocol?
     private weak var viewController: MovieQuizViewController?
@@ -18,6 +15,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestionIndex: Int = 0
     private var correctAnswers: Int = 0
 
+    // MARK: - Initializer
+    
     init(
         viewController: MovieQuizViewControllerProtocol,
         statisticService: StatisticService
@@ -30,10 +29,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController.showLoadingIndicator()
     }
     
-//    init(viewController: MovieQuizViewControllerProtocol) {
-//        self.viewController = viewController as? MovieQuizViewController
-//    }
-
     // MARK: - QuestionFactoryDelegate
 
     func didLoadDataFromServer() {
@@ -46,6 +41,18 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController?.showNetworkError(message: message)
     }
 
+    // MARK: - IBActions Methods
+    
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
+
+    func noButtonClicked() {
+        didAnswer(isYes: false)
+    }
+    
+    // MARK: - Quiz Managment Methods
+    
     func didRecieveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -57,12 +64,13 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             self?.viewController?.show(quiz: viewModel)
         }
     }
+    
 
-    func isLastQuestion() -> Bool {
+    private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
 
-    func didAnswer(isCorrectAnswer: Bool) {
+    private func didAnswer(isCorrectAnswer: Bool) {
         if isCorrectAnswer {
             correctAnswers += 1
         }
@@ -74,24 +82,16 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory?.requestNextQuestion()
     }
 
-    func switchToNextQuestion() {
+    private func switchToNextQuestion() {
         currentQuestionIndex += 1
     }
 
-    func convert(model: QuizQuestion) -> QuizStepViewModel {
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
         )
-    }
-
-    func yesButtonClicked() {
-        didAnswer(isYes: true)
-    }
-
-    func noButtonClicked() {
-        didAnswer(isYes: false)
     }
 
     private func didAnswer(isYes: Bool) {
@@ -103,6 +103,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 
         proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
+    
+    // MARK: - Final Result Methods
 
     private func proceedWithAnswer(isCorrect: Bool) {
         didAnswer(isCorrectAnswer: isCorrect)

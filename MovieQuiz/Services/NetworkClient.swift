@@ -1,22 +1,21 @@
-//
-//  NetworkClient.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 23.04.2024.
-//
-
 import Foundation
+
+// MARK: - NetworkRouting Protocol Declaration
 
 protocol NetworkRouting {
     func fetch(url: URL, handler: @escaping (Result<Data, Error>) -> Void)
 }
 
+// MARK: - NetworkClient Declaration
+
 struct NetworkClient: NetworkRouting {
 
+    // MARK: - NetworkError Enum
     private enum NetworkError: Error {
         case codeError
     }
     
+    // MARK: - Methods
     func fetch(url: URL, handler: @escaping (Result<Data, Error>) -> Void) {
         let request = URLRequest(url: url)
         
