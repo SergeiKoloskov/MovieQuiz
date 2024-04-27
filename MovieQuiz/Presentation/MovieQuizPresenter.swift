@@ -54,14 +54,17 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // MARK: - Quiz Managment Methods
     
     func didRecieveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-
-        currentQuestion = question
-        let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
-            self?.viewController?.show(quiz: viewModel)
+            guard let self = self else { return }
+            self.viewController?.hideLoadingIndicator()
+            guard let question = question else {
+                return
+            }
+            self.currentQuestion = question
+            let viewModel = self.convert(model: question)
+            UIView.transition(with: self.viewController?.view ?? UIView(), duration: 0.5, options: .transitionCrossDissolve, animations: {
+                self.viewController?.show(quiz: viewModel)
+            })
         }
     }
     
@@ -86,7 +89,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         currentQuestionIndex += 1
     }
 
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
