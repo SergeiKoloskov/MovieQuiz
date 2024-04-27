@@ -1,11 +1,6 @@
-//
-//  StatisticServiceImplementation.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 21.04.2024.
-//
-
 import Foundation
+
+// MARK: - StatisticServiceImplementation Declaration
 
 final class StatisticServiceImplementation: StatisticService {
     // MARK: - Keys Enum
@@ -13,7 +8,7 @@ final class StatisticServiceImplementation: StatisticService {
         case correct, total, bestGame, gamesCount, totalAccuracy
     }
     
-    // MARK: - Private Properties
+    // MARK: - Properties
     private let userDefaults = UserDefaults.standard
     
     private var correct: Int {

@@ -1,10 +1,3 @@
-//
-//  StatisticService.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 21.04.2024.
-//
-
 import Foundation
 
 protocol StatisticService {

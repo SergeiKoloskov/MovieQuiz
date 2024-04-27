@@ -1,15 +1,12 @@
-//
-//  AlertPresenter.swift
-//  MovieQuiz
-//
-//  Created by MacBookPro on 20.04.2024.
-//
-
 import UIKit
+
+// MARK: - AlertPresenter Declaration
 
 final class AlertPresenter: AlertPresenterProtocol {
     
     weak var delegate: UIViewController?
+    
+    // MARK: - Initializer
     
     init(delegate: UIViewController) {
         self.delegate = delegate
