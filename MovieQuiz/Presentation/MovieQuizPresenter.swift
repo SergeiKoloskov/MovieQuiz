@@ -29,6 +29,10 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory?.loadData()
         viewController.showLoadingIndicator()
     }
+    
+//    init(viewController: MovieQuizViewControllerProtocol) {
+//        self.viewController = viewController as? MovieQuizViewController
+//    }
 
     // MARK: - QuestionFactoryDelegate
 
